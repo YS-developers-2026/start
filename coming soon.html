@@ -3,347 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YS Developers</title>
+    <title>YS developers</title>
     <link rel="icon" type="image/png" href="images/favicon.png">
     <style>
-        :root {
-            --primary-blue: #00d2ff;
-            --logo-blue: #0095ff;
-            --bg-black: #00040a;
-            --cyan-glow: #00f2ff;
-            --turquoise: #40e0d0;
-            --deep-blue: #0055ff;
-            --image-outline: #99f3ff; /* Matching the bright inner outline from image */
-        }
-
+        /* Base Styles & Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace;
+            /* Hide the real cursor so the virtual one takes over */
+            cursor: none !important;
         }
 
         body, html {
             width: 100%;
             height: 100%;
-            background-color: var(--bg-black);
             overflow: hidden;
+            background: linear-gradient(135deg, #001f3f, #008080);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* --- Background Effects --- */
-        #code-bg {
+        /* Virtual Cursor Implementation 
+           Optimized for speed: transition none and hardware acceleration.
+        */
+        #virtual-cursor {
             position: fixed;
+            top: 0;
+            left: 0;
+            width: 32px; 
+            height: auto;
+            pointer-events: none; 
+            z-index: 9999;
+            /* Ensure zero lag movement */
+            transition: none !important;
+            will-change: transform;
+            /* Start off-screen */
+            transform: translate3d(-100px, -100px, 0); 
+        }
+
+        /* Particle Background */
+        #particleCanvas {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 1;
-        }
-
-        #glitter-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 4;
             pointer-events: none;
         }
 
-        .scanlines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.4) 50%
-            );
-            background-size: 100% 3px;
-            pointer-events: none;
-        }
-
-        .vignette {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 3;
-            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.95) 100%);
-            pointer-events: none;
-        }
-
-        /* --- Main Container --- */
-        .container {
+        .main-frame {
             position: relative;
             z-index: 10;
-            text-align: center;
-            width: 90%;
-            max-width: 1400px;
-        }
-
-        /* --- Logo Styling --- */
-        .logo-wrap {
-            position: relative;
-            display: block;
-            width: 100%;
-            opacity: 0;
-            transform: scale(0.95);
-            animation: emerge 3s cubic-bezier(0.19, 1, 0.22, 1) forwards 0.5s;
-        }
-
-        @keyframes emerge {
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .ys-logo {
-            font-family: 'Arial Black', Gadget, sans-serif;
-            font-size: clamp(10rem, 35vw, 26rem); 
-            font-weight: 900;
-            position: relative;
-            display: inline-block;
-            line-height: 0.8;
-            letter-spacing: -5px; 
-            width: 100%;
-            text-align: center;
-            
-            /* Enhanced Static Crystalline Fill */
-            background: radial-gradient(
-                circle at 40% 40%, 
-                #ffffff 0%, 
-                #a0f0ff 10%,
-                var(--primary-blue) 30%, 
-                var(--turquoise) 60%, 
-                var(--deep-blue) 90%
-            );
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-
-            /* Sharp Multi-layered Outline like the image */
-            -webkit-text-stroke: 3px var(--image-outline);
-            
-            /* Intense Glow and Bloom effect from the image */
-            filter: 
-                drop-shadow(0 0 2px #ffffff)
-                drop-shadow(0 0 10px var(--cyan-glow))
-                drop-shadow(0 0 25px var(--logo-blue))
-                drop-shadow(5px 15px 5px rgba(0, 0, 0, 0.9))
-                drop-shadow(10px 30px 25px rgba(0, 0, 0, 1));
-        }
-
-        /* DEVELOPERS Text */
-        .dev-text {
-            font-family: 'Arial Black', Gadget, sans-serif;
-            font-size: clamp(1.8rem, 5.5vw, 4.2rem);
-            font-weight: 900;
-            color: #ffffff;
-            letter-spacing: clamp(10px, 2vw, 25px); 
-            text-transform: uppercase;
-            margin-top: 10px;
-            text-shadow: 
-                0 0 10px #ffffff, 
-                0 0 40px var(--cyan-glow), 
-                0 15px 30px rgba(0, 0, 0, 1);
-            opacity: 0;
-            animation: fadeIn 2s ease-out forwards 2s;
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-
-        /* --- Button --- */
-        .btn-enter {
-            margin-top: 60px;
-            padding: 22px 60px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #fff;
-            background: rgba(0, 242, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 100px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
+            width: 80%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 15px;
-            opacity: 0;
-            transform: translateY(30px);
-            animation: slideUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 3s;
-            transition: all 0.5s ease;
-            backdrop-filter: blur(15px);
-            text-transform: uppercase;
-            letter-spacing: 3px;
+            perspective: 1000px;
         }
 
-        .btn-enter:hover {
-            background: #ffffff;
-            color: #000;
-            transform: translateY(-8px) scale(1.05);
-            box-shadow: 0 25px 50px rgba(0, 242, 255, 0.6);
-            border-color: #fff;
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            background-color: rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        @keyframes slideUp {
-            to { opacity: 1; transform: translateY(0); }
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
+        .image-wrapper:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+        }
+
+        .overlay-text {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: lowercase;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            letter-spacing: 2px;
+        }
+
+        .dots::after {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            text-align: left;
+            animation: dot-sequence 2s infinite steps(4);
+        }
+
+        @keyframes dot-sequence {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple-effect 0.8s linear;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes ripple-effect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <canvas id="code-bg"></canvas>
-    <canvas id="glitter-layer"></canvas>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
+    <!-- The Virtual Cursor Image -->
+    <img id="virtual-cursor" src="images/cursor.png" alt="cursor">
 
-    <div class="container">
-        <div class="logo-wrap">
-            <h1 class="ys-logo">YS</h1>
-            <div class="dev-text">DEVELOPERS</div>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="main-frame">
+        <div class="image-wrapper interactive-img">
+            <img src="images/ys.png" alt="YS Developers" onerror="this.style.display='none'; this.parentNode.style.background='rgba(255,255,255,0.1)'; this.parentNode.innerHTML += '<div style=\'color:white; text-align:center; padding:20px; pointer-events:none;\'>Coming Soon<br><small>Place Ys.png in /images/</small></div>'">
+            <div class="overlay-text">
+                coming soon<span class="dots"></span>
+            </div>
         </div>
-
-        <br>
-        
-        <a href="coming soon.html" class="btn-enter">
-            Visit Site
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="7" y1="17" x2="17" y2="7"></line>
-                <polyline points="7 7 17 7 17 17"></polyline>
-            </svg>
-        </a>
     </div>
 
     <script>
-        const canvas = document.getElementById('code-bg');
-        const ctx = canvas.getContext('2d');
-        const gCanvas = document.getElementById('glitter-layer');
-        const gCtx = gCanvas.getContext('2d');
-
-        let width, height;
-        const fontSize = 16;
-        let rows = [];
-        let particles = [];
+        const vCursor = document.getElementById('virtual-cursor');
         
-        const snippets = [
-            "yanky unger & shloimi gross",
-            "Lankv bunger shloimscer>>",
-            "yanky unger > system.init();",
-            "sabbt: yanky unger & shloimi gross",
-            "shlttakanc cost >> root",
-            "if(ys) { deploy.experience(); }",
-            "const dev = ['yanky', 'shloimi'];",
-            "YS_DEVELOPERS_SYSTEM_ACTIVE",
-            "Lanky lenkienti ellader >"
-        ];
+        // Use requestAnimationFrame for the absolute fastest position updates
+        let mouseX = -100;
+        let mouseY = -100;
 
-        class GlitterParticle {
-            constructor() {
-                this.init();
+        function updateCursor() {
+            vCursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+            requestAnimationFrame(updateCursor);
+        }
+        requestAnimationFrame(updateCursor);
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Swap images based on hover state
+            const target = e.target;
+            const isInteractive = target.closest('a, button, .interactive-img, .image-wrapper, [role="button"]');
+            
+            if (isInteractive) {
+                if (!vCursor.src.includes('cursor2.png')) {
+                    vCursor.src = 'images/cursor2.png';
+                    vCursor.style.width = '40px'; 
+                }
+            } else {
+                if (!vCursor.src.includes('cursor.png')) {
+                    vCursor.src = 'images/cursor.png';
+                    vCursor.style.width = '32px';
+                }
             }
+        });
+
+        // Hide cursor when it leaves the window
+        document.addEventListener('mouseleave', () => { vCursor.style.opacity = '0'; });
+        document.addEventListener('mouseenter', () => { vCursor.style.opacity = '1'; });
+
+        // Particle Background System
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() { this.init(); }
             init() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 2.5;
-                this.speedX = (Math.random() - 0.5) * 0.4;
-                this.speedY = (Math.random() - 0.5) * 0.4;
-                this.opacity = Math.random();
-                this.fade = 0.005 + Math.random() * 0.01;
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 3.0; 
+                this.speedY = (Math.random() - 0.5) * 3.0;
+                this.opacity = Math.random() * 0.5 + 0.2;
             }
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-                this.opacity -= this.fade;
-                if (this.opacity <= 0) this.init();
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.init();
             }
             draw() {
-                gCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                gCtx.shadowBlur = 8;
-                gCtx.shadowColor = '#00f2ff';
-                gCtx.beginPath();
-                gCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                gCtx.fill();
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
-        function resize() {
-            width = canvas.width = gCanvas.width = window.innerWidth;
-            height = canvas.height = gCanvas.height = window.innerHeight;
-            
-            const rowCount = Math.floor(height / (fontSize * 1.5)) + 1;
-            rows = [];
-            for (let i = 0; i < rowCount; i++) {
-                rows.push({
-                    y: i * fontSize * 1.5,
-                    text: generateRowText(),
-                    speed: 0.12 + Math.random() * 0.2
-                });
-            }
-
-            particles = [];
-            for (let i = 0; i < 80; i++) {
-                particles.push(new GlitterParticle());
-            }
+        function initParticles() {
+            for (let i = 0; i < 120; i++) particles.push(new Particle());
         }
 
-        function generateRowText() {
-            let line = "";
-            const targetLength = Math.floor(width / (fontSize * 0.55));
-            while (line.length < targetLength) {
-                line += snippets[Math.floor(Math.random() * snippets.length)] + "    ";
-            }
-            return line;
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
         }
 
-        function draw() {
-            ctx.fillStyle = '#00040a';
-            ctx.fillRect(0, 0, width, height);
+        initParticles();
+        animate();
 
-            ctx.font = 'bold 14px "Courier New", monospace';
-            
-            rows.forEach(row => {
-                const isHighlight = row.text.includes("yanky") || row.text.includes("shloimi");
-                
-                if (isHighlight) {
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#00f2ff';
-                } else {
-                    ctx.fillStyle = 'rgba(0, 149, 255, 0.25)';
-                    ctx.shadowBlur = 0;
-                }
-
-                ctx.fillText(row.text, 10, row.y);
-                
-                row.y -= row.speed;
-
-                if (row.y < -fontSize) {
-                    row.y = height + fontSize;
-                    row.text = generateRowText();
-                }
-            });
-
-            gCtx.clearRect(0, 0, width, height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-
-            requestAnimationFrame(draw);
-        }
-
-        window.addEventListener('resize', resize);
-        window.onload = () => {
-            resize();
-            draw();
-        };
+        window.addEventListener('mousedown', function(e) {
+            const ripple = document.createElement('div');
+            ripple.classList.add('ripple');
+            document.body.appendChild(ripple);
+            const size = 50;
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - size / 2) + 'px';
+            ripple.style.top = (e.clientY - size / 2) + 'px';
+            ripple.addEventListener('animationend', () => ripple.remove());
+        });
     </script>
 </body>
 </html>
